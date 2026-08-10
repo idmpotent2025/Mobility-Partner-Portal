@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --cat-yellow: #FFCD11;
+  --cat-black: #111111;
+  --cat-charcoal: #1C1C1C;
+  --cat-gray: #F5F5F5;
+  --cat-steel: #4B4B4B;
+  --cat-light: #FFF9D6;
+}
+
+html {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--cat-gray);
+  color: var(--cat-black);
+}
+
+@layer components {
+  .cat-btn-primary {
+    @apply bg-cat-yellow text-cat-black font-bold px-6 py-3 rounded hover:bg-yellow-400 transition-colors duration-200;
+  }
+
+  .cat-btn-outline {
+    @apply border-2 border-cat-yellow text-cat-yellow font-bold px-6 py-3 rounded hover:bg-cat-yellow hover:text-cat-black transition-colors duration-200;
+  }
+
+  .section-card {
+    @apply bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg hover:border-cat-yellow transition-all duration-200;
+  }
+}

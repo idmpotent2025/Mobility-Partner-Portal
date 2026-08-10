@@ -1,0 +1,65 @@
+'use client'
+
+import { useUser } from '@auth0/nextjs-auth0/client'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import Link from 'next/link'
+
+const features = [
+  { title: 'Certified Pre-Owned', description: 'Every CPO unit passes a 160-point inspection by factory-trained technicians with a 12-month powertrain warranty.' },
+  { title: 'Marketplace Search', description: 'Filter by model, year, hours, price, location, and condition rating across the global dealer network.' },
+  { title: 'Machine History', description: 'Full service and ownership history, including telematics data, repair records, and previous inspections.' },
+  { title: 'Condition Reports', description: 'Detailed photographic condition reports with graded sections: undercarriage, powertrain, hydraulics, cab.' },
+  { title: 'Price Benchmarking', description: 'Market value estimates based on real-time auction data, private sales, and dealer listings.' },
+  { title: 'Trade-In Appraisal', description: 'Submit your current machines for fast online appraisal with competitive trade-in offers.' },
+]
+
+export default function FindUsedPage() {
+  const { user, isLoading } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/api/auth/login?returnTo=/find-used')
+    }
+  }, [user, isLoading, router])
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cat-gray">
+        <div className="w-10 h-10 border-4 border-cat-yellow border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-cat-gray">
+      <div className="bg-cat-black text-white py-12 px-4">
+        <div className="max-w-5xl mx-auto">
+          <Link href="/dashboard" className="text-cat-yellow text-sm hover:underline mb-4 inline-block">
+            ← Dashboard
+          </Link>
+          <div className="text-5xl mb-4">🏷️</div>
+          <h1 className="text-4xl font-black mb-2">Find Used</h1>
+          <p className="text-gray-300 text-lg">
+            Shop inspected, certified pre-owned equipment with transparent condition reports and history.
+          </p>
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {features.map((f) => (
+            <div
+              key={f.title}
+              className="bg-white rounded-xl border-2 border-transparent hover:border-cat-yellow p-6 shadow-sm hover:shadow-md transition-all duration-200"
+            >
+              <h3 className="font-bold text-cat-black mb-2">{f.title}</h3>
+              <p className="text-cat-steel text-sm leading-relaxed">{f.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
