@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const features = [
   { title: 'Instant Availability', description: 'Search real-time availability across dealer locations by equipment type, date range, and region.' },
@@ -17,12 +18,13 @@ const features = [
 export default function RentPage() {
   const { user, isLoading } = useUser()
   const router = useRouter()
+  const { variant } = useAuthVariant()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/api/auth/login?returnTo=/rent')
+      router.push(getLoginUrl(variant, '/rent'))
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, variant])
 
   if (isLoading || !user) {
     return (

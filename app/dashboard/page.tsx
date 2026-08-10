@@ -1,6 +1,6 @@
-import { getSession } from '@auth0/nextjs-auth0'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { auth0A } from '@/lib/auth-variants'
 
 const dashboardTiles = [
   {
@@ -55,7 +55,7 @@ const dashboardTiles = [
 ]
 
 export default async function DashboardPage() {
-  const session = await getSession()
+  const session = await auth0A.getSession()
 
   if (!session?.user) {
     redirect('/')

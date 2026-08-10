@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const features = [
   { title: 'Service Manuals', description: 'Digital access to the full library of OEM service, operation, and maintenance manuals by serial number.' },
@@ -17,12 +18,13 @@ const features = [
 export default function ServiceInfoPage() {
   const { user, isLoading } = useUser()
   const router = useRouter()
+  const { variant } = useAuthVariant()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/api/auth/login?returnTo=/service-info')
+      router.push(getLoginUrl(variant, '/service-info'))
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, variant])
 
   if (isLoading || !user) {
     return (

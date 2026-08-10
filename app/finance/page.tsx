@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const features = [
   { title: 'Equipment Loans', description: 'Competitive fixed and variable rate loans with terms from 24 to 84 months and flexible down payment options.' },
@@ -17,12 +18,13 @@ const features = [
 export default function FinancePage() {
   const { user, isLoading } = useUser()
   const router = useRouter()
+  const { variant } = useAuthVariant()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/api/auth/login?returnTo=/finance')
+      router.push(getLoginUrl(variant, '/finance'))
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, variant])
 
   if (isLoading || !user) {
     return (

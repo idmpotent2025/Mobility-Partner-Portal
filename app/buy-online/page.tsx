@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const features = [
   { title: 'Parts Ordering', description: 'Order genuine OEM parts with next-day delivery options. Track shipments in real time with carrier integration.' },
@@ -17,12 +18,13 @@ const features = [
 export default function BuyOnlinePage() {
   const { user, isLoading } = useUser()
   const router = useRouter()
+  const { variant } = useAuthVariant()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/api/auth/login?returnTo=/buy-online')
+      router.push(getLoginUrl(variant, '/buy-online'))
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, variant])
 
   if (isLoading || !user) {
     return (

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const navLinks = [
   { label: 'Explore', href: '/explore' },
@@ -16,6 +17,7 @@ const navLinks = [
 export default function Navigation() {
   const { user, isLoading } = useUser()
   const partnerPortalUrl = process.env.NEXT_PUBLIC_PARTNER_PORTAL_URL || 'http://localhost:3000'
+  const { variant } = useAuthVariant()
 
   return (
     <nav className="sticky top-0 z-50 bg-cat-black shadow-lg">
@@ -91,7 +93,7 @@ export default function Navigation() {
               </div>
             ) : (
               <a
-                href="/api/auth/login"
+                href={getLoginUrl(variant)}
                 className="bg-cat-yellow text-cat-black font-bold px-4 py-2 rounded text-sm hover:bg-yellow-400 transition-colors duration-150"
               >
                 Sign In

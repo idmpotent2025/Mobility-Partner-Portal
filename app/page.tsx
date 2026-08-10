@@ -1,4 +1,7 @@
-import Link from 'next/link'
+'use client'
+
+import AbcToggle from '@/components/AbcToggle'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const portalTiles = [
   {
@@ -78,6 +81,9 @@ const howItWorks = [
 ]
 
 export default function HomePage() {
+  const { variant, setVariant } = useAuthVariant()
+  const dashboardLoginUrl = getLoginUrl(variant, '/dashboard')
+
   return (
     <div className="min-h-screen bg-cat-gray">
       {/* Hero */}
@@ -87,17 +93,22 @@ export default function HomePage() {
             Partner Portal
           </div>
           <h1 className="text-5xl sm:text-6xl font-black leading-tight mb-4">
-            One Account.{' '}
+            One Account.
             <br />
-            All Of{' '}
-            <span className="text-cat-yellow">Mobility.</span>
+            All Of <span className="text-cat-yellow">Mobility.</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
             Your fleet. Financed, managed, and serviced — all in one place.
           </p>
+
+          {/* A/B/C Test toggle */}
+          <div className="flex justify-center mb-8">
+            <AbcToggle variant={variant} onChange={setVariant} />
+          </div>
+
           <div className="flex flex-wrap gap-4 justify-center">
             <a
-              href="/api/auth/login?returnTo=/dashboard"
+              href={dashboardLoginUrl}
               className="bg-cat-yellow text-cat-black font-bold px-8 py-4 rounded-lg text-lg hover:bg-yellow-400 transition-colors duration-200"
             >
               Get Started
@@ -139,7 +150,7 @@ export default function HomePage() {
             {portalTiles.map((tile) => (
               <a
                 key={tile.id}
-                href="/api/auth/login?returnTo=/dashboard"
+                href={dashboardLoginUrl}
                 className="bg-white rounded-xl border-2 border-transparent hover:border-cat-yellow p-6 shadow-sm hover:shadow-md transition-all duration-200 group text-left"
               >
                 <div className="text-3xl mb-3">{tile.icon}</div>
@@ -164,9 +175,7 @@ export default function HomePage() {
       <section className="bg-cat-black text-white py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-black text-center mb-2">How It Works</h2>
-          <p className="text-gray-400 text-center mb-12">
-            Up and running in three steps
-          </p>
+          <p className="text-gray-400 text-center mb-12">Up and running in three steps</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {howItWorks.map((step) => (
               <div key={step.step} className="text-center">
@@ -178,7 +187,7 @@ export default function HomePage() {
           </div>
           <div className="text-center mt-12">
             <a
-              href="/api/auth/login?returnTo=/dashboard"
+              href={dashboardLoginUrl}
               className="bg-cat-yellow text-cat-black font-bold px-10 py-4 rounded-lg text-lg hover:bg-yellow-400 transition-colors duration-200"
             >
               Create Your Account

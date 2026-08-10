@@ -4,6 +4,7 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
 const features = [
   { title: 'Certified Pre-Owned', description: 'Every CPO unit passes a 160-point inspection by factory-trained technicians with a 12-month powertrain warranty.' },
@@ -17,12 +18,13 @@ const features = [
 export default function FindUsedPage() {
   const { user, isLoading } = useUser()
   const router = useRouter()
+  const { variant } = useAuthVariant()
 
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/api/auth/login?returnTo=/find-used')
+      router.push(getLoginUrl(variant, '/find-used'))
     }
-  }, [user, isLoading, router])
+  }, [user, isLoading, router, variant])
 
   if (isLoading || !user) {
     return (
