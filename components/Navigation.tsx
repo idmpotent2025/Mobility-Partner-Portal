@@ -4,16 +4,6 @@ import Link from 'next/link'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useAuthVariant, getLoginUrl } from '@/lib/use-auth-variant'
 
-const navLinks = [
-  { label: 'Explore', href: '/explore' },
-  { label: 'Manage', href: '/manage' },
-  { label: 'Finance', href: '/finance' },
-  { label: 'Rent', href: '/rent' },
-  { label: 'Find Used', href: '/find-used' },
-  { label: 'Service Info', href: '/service-info' },
-  { label: 'Buy Online', href: '/buy-online' },
-]
-
 export default function Navigation() {
   const { user, isLoading } = useUser()
   const partnerPortalUrl = process.env.NEXT_PUBLIC_PARTNER_PORTAL_URL || 'http://localhost:3000'
@@ -42,15 +32,18 @@ export default function Navigation() {
           {/* Desktop nav links — only show when authenticated */}
           {user && (
             <div className="hidden lg:flex items-center gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-gray-300 hover:text-cat-yellow hover:bg-cat-charcoal px-3 py-2 rounded text-sm font-medium transition-colors duration-150"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              <Link
+                href="/dashboard"
+                className="text-gray-300 hover:text-cat-yellow hover:bg-cat-charcoal px-3 py-2 rounded text-sm font-medium transition-colors duration-150"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/profile"
+                className="text-gray-300 hover:text-cat-yellow hover:bg-cat-charcoal px-3 py-2 rounded text-sm font-medium transition-colors duration-150"
+              >
+                Profile
+              </Link>
             </div>
           )}
 

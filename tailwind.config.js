@@ -16,6 +16,13 @@ module.exports = {
           steel: '#4B4B4B',
           light: '#FFF9D6',
         },
+        portal: {
+          blue: '#0071CE',
+          dark: '#004F9A',
+          yellow: '#FFC220',
+          light: '#E6F2FF',
+          gray: '#F5F7FA',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
