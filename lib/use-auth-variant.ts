@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 
-export type Variant = 'a' | 'b' | 'c'
+export type Variant = 'a' | 'b' | 'c' | 'd'
 
 const STORAGE_KEY = 'auth_variant'
 
 export function getLoginUrl(variant: Variant, returnTo = '/dashboard'): string {
+  if (variant === 'd') return '/login/native'
   const base = variant === 'a' ? '/api/auth' : `/api/auth-${variant}`
   return `${base}/login?returnTo=${encodeURIComponent(returnTo)}`
 }
@@ -16,7 +17,7 @@ export function useAuthVariant() {
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as Variant | null
-    if (stored === 'a' || stored === 'b' || stored === 'c') {
+    if (stored === 'a' || stored === 'b' || stored === 'c' || stored === 'd') {
       setVariantState(stored)
     }
   }, [])

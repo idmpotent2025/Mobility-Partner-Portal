@@ -6,44 +6,13 @@ import { mockTickets, type Ticket } from '@/lib/data'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-type ProfileTab = 'tokens' | 'connections' | 'support' | 'methods'
-type Strategy = 'oidc' | 'samlp'
+type ProfileTab = 'tokens' | 'support' | 'methods'
 
 interface TokenData {
   accessToken: string | null
   idToken: string | null
   refreshToken: string | null
 }
-
-interface SamlFields {
-  name: string
-  signInEndpoint: string
-  signingCert: string
-  signOutEndpoint: string
-  signSAMLRequest: boolean
-  digestAlgorithm: 'sha1' | 'sha256'
-  signatureAlgorithm: 'rsa-sha1' | 'rsa-sha256'
-}
-
-const defaultOidc = {
-  name: '',
-  discoveryUrl: '',
-  clientId: '',
-  clientSecret: '',
-  scope: 'openid profile email',
-}
-
-const defaultSaml: SamlFields = {
-  name: '',
-  signInEndpoint: '',
-  signingCert: '',
-  signOutEndpoint: '',
-  signSAMLRequest: false,
-  digestAlgorithm: 'sha256',
-  signatureAlgorithm: 'rsa-sha256',
-}
-
-type OidcFields = typeof defaultOidc
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -57,40 +26,10 @@ function decodeJwt(token: string): { header: object; payload: object } | null {
   }
 }
 
-function stripPem(cert: string): string {
-  return cert
-    .replace(/-----BEGIN CERTIFICATE-----/g, '')
-    .replace(/-----END CERTIFICATE-----/g, '')
-    .replace(/\s+/g, '')
-}
-
 // ── Shared UI ────────────────────────────────────────────────────────────────
 
 const inputCls =
   'w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-portal-blue focus:border-transparent placeholder-gray-400'
-
-function Field({
-  label,
-  required,
-  hint,
-  children,
-}: {
-  label: string
-  required?: boolean
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-        {required && <span className="text-red-400 ml-0.5">*</span>}
-      </label>
-      {children}
-      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
-    </div>
-  )
-}
 
 // ── Token Card ───────────────────────────────────────────────────────────────
 
@@ -249,350 +188,6 @@ function TokensTab() {
           </div>
         )}
       </div>
-    </div>
-  )
-}
-
-// ── Enterprise Connections Tab ───────────────────────────────────────────────
-
-function ConnectionsTab() {
-  const [strategy, setStrategy] = useState<Strategy>('oidc')
-  const [oidc, setOidc] = useState<OidcFields>(defaultOidc)
-  const [saml, setSaml] = useState<SamlFields>(defaultSaml)
-  const [submitting, setSubmitting] = useState(false)
-  const [result, setResult] = useState<{ id: string; name: string; label: string } | null>(null)
-  const [error, setError] = useState('')
-
-  function resetFeedback() {
-    setResult(null)
-    setError('')
-  }
-
-  async function submitOidc() {
-    resetFeedback()
-    if (!oidc.name.trim() || !oidc.discoveryUrl.trim() || !oidc.clientId.trim() || !oidc.clientSecret.trim()) {
-      setError('Please fill in all required fields.')
-      return
-    }
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/connections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: oidc.name.trim(),
-          strategy: 'oidc',
-          options: {
-            type: 'back_channel',
-            discovery_url: oidc.discoveryUrl.trim(),
-            client_id: oidc.clientId.trim(),
-            client_secret: oidc.clientSecret,
-            scope: oidc.scope.trim() || 'openid profile email',
-          },
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError((data as { error?: string }).error ?? 'Failed to create connection.')
-      } else {
-        setResult({ id: (data as { id: string }).id, name: (data as { name: string }).name, label: 'OIDC' })
-        setOidc(defaultOidc)
-      }
-    } catch {
-      setError('Network error. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  async function submitSaml() {
-    resetFeedback()
-    if (!saml.name.trim() || !saml.signInEndpoint.trim() || !saml.signingCert.trim()) {
-      setError('Please fill in all required fields.')
-      return
-    }
-    setSubmitting(true)
-    try {
-      const res = await fetch('/api/connections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: saml.name.trim(),
-          strategy: 'samlp',
-          options: {
-            signInEndpoint: saml.signInEndpoint.trim(),
-            signingCert: stripPem(saml.signingCert),
-            ...(saml.signOutEndpoint.trim() && { signOutEndpoint: saml.signOutEndpoint.trim() }),
-            signSAMLRequest: saml.signSAMLRequest,
-            digestAlgorithm: saml.digestAlgorithm,
-            signatureAlgorithm: saml.signatureAlgorithm,
-          },
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError((data as { error?: string }).error ?? 'Failed to create connection.')
-      } else {
-        setResult({ id: (data as { id: string }).id, name: (data as { name: string }).name, label: 'SAML 2.0' })
-        setSaml(defaultSaml)
-      }
-    } catch {
-      setError('Network error. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  return (
-    <div>
-      <div className="mb-6">
-        <h2 className="text-base font-semibold text-gray-800">Enterprise Connection Onboarding</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Create OIDC or SAML 2.0 enterprise connections via the Auth0 Management API.
-        </p>
-      </div>
-
-      {/* Success banner */}
-      {result && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-          <span className="text-green-600 text-lg leading-none mt-0.5">✓</span>
-          <div>
-            <p className="text-green-800 font-semibold text-sm">{result.label} connection created successfully</p>
-            <p className="text-green-700 text-xs mt-1">
-              <span className="font-medium">{result.name}</span>
-              <span className="mx-2 text-green-400">•</span>
-              Connection ID: <span className="font-mono">{result.id}</span>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Error banner */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-          <span className="text-red-500 text-lg leading-none mt-0.5">⚠</span>
-          <p className="text-red-700 text-sm">{error}</p>
-        </div>
-      )}
-
-      {/* Strategy tabs */}
-      <div className="flex border-b border-gray-200 mb-8">
-        {(['oidc', 'samlp'] as Strategy[]).map((s) => (
-          <button
-            key={s}
-            onClick={() => { setStrategy(s); resetFeedback() }}
-            className={`px-6 py-3 text-sm font-semibold border-b-2 -mb-px transition-colors ${
-              strategy === s
-                ? 'border-portal-blue text-portal-blue'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            {s === 'oidc' ? 'OIDC' : 'SAML 2.0'}
-          </button>
-        ))}
-      </div>
-
-      {/* OIDC Form */}
-      {strategy === 'oidc' && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
-          <div>
-            <h3 className="text-base font-semibold text-gray-800">OpenID Connect (OIDC)</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Uses auto-discovery. The IdP must expose a{' '}
-              <code className="font-mono text-gray-600">.well-known/openid-configuration</code> endpoint.
-            </p>
-          </div>
-
-          <Field
-            label="Connection Name"
-            required
-            hint="Alphanumeric and hyphens only, e.g. okta-prod. Must be unique in your Auth0 tenant."
-          >
-            <input
-              type="text"
-              value={oidc.name}
-              onChange={(e) => setOidc((p) => ({ ...p, name: e.target.value }))}
-              placeholder="okta-prod"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field
-            label="Discovery URL"
-            required
-            hint="The IdP's OpenID Connect well-known configuration URL."
-          >
-            <input
-              type="url"
-              value={oidc.discoveryUrl}
-              onChange={(e) => setOidc((p) => ({ ...p, discoveryUrl: e.target.value }))}
-              placeholder="https://dev-xxxxxx.okta.com/.well-known/openid-configuration"
-              className={inputCls}
-            />
-          </Field>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Client ID" required>
-              <input
-                type="text"
-                value={oidc.clientId}
-                onChange={(e) => setOidc((p) => ({ ...p, clientId: e.target.value }))}
-                placeholder="0oabcdef1234..."
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Client Secret" required>
-              <input
-                type="password"
-                value={oidc.clientSecret}
-                onChange={(e) => setOidc((p) => ({ ...p, clientSecret: e.target.value }))}
-                placeholder="••••••••••••••"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-
-          <Field
-            label="Scope"
-            hint="Space-separated OAuth 2.0 scopes to request from the IdP."
-          >
-            <input
-              type="text"
-              value={oidc.scope}
-              onChange={(e) => setOidc((p) => ({ ...p, scope: e.target.value }))}
-              placeholder="openid profile email"
-              className={inputCls}
-            />
-          </Field>
-
-          <div className="pt-2">
-            <button
-              onClick={submitOidc}
-              disabled={submitting}
-              className="bg-portal-blue text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-portal-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Creating…' : 'Create OIDC Connection →'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SAML Form */}
-      {strategy === 'samlp' && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm space-y-5">
-          <div>
-            <h3 className="text-base font-semibold text-gray-800">SAML 2.0</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Connect via SAML 2.0 protocol. Requires the IdP sign-in URL and X.509 signing certificate.
-            </p>
-          </div>
-
-          <Field
-            label="Connection Name"
-            required
-            hint="Alphanumeric and hyphens only, e.g. azure-ad-saml. Must be unique in your Auth0 tenant."
-          >
-            <input
-              type="text"
-              value={saml.name}
-              onChange={(e) => setSaml((p) => ({ ...p, name: e.target.value }))}
-              placeholder="azure-ad-saml"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field
-            label="IdP Sign-In URL"
-            required
-            hint="The SAML SSO endpoint where Auth0 sends authentication requests."
-          >
-            <input
-              type="url"
-              value={saml.signInEndpoint}
-              onChange={(e) => setSaml((p) => ({ ...p, signInEndpoint: e.target.value }))}
-              placeholder="https://login.microsoftonline.com/<tenant-id>/saml2"
-              className={inputCls}
-            />
-          </Field>
-
-          <Field
-            label="X.509 Signing Certificate"
-            required
-            hint="Paste the IdP's PEM certificate. Headers (-----BEGIN CERTIFICATE-----) are stripped automatically."
-          >
-            <textarea
-              value={saml.signingCert}
-              onChange={(e) => setSaml((p) => ({ ...p, signingCert: e.target.value }))}
-              rows={6}
-              placeholder={"-----BEGIN CERTIFICATE-----\nMIIC4jCCAcqgAwIBAgIQXttx...\n-----END CERTIFICATE-----"}
-              className={`${inputCls} resize-y font-mono text-xs leading-relaxed`}
-            />
-          </Field>
-
-          <Field
-            label="IdP Sign-Out URL"
-            hint="Optional. The SAML SLO endpoint for single logout."
-          >
-            <input
-              type="url"
-              value={saml.signOutEndpoint}
-              onChange={(e) => setSaml((p) => ({ ...p, signOutEndpoint: e.target.value }))}
-              placeholder="https://login.microsoftonline.com/<tenant-id>/saml2 (optional)"
-              className={inputCls}
-            />
-          </Field>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Digest Algorithm">
-              <select
-                value={saml.digestAlgorithm}
-                onChange={(e) =>
-                  setSaml((p) => ({ ...p, digestAlgorithm: e.target.value as 'sha1' | 'sha256' }))
-                }
-                className={inputCls}
-              >
-                <option value="sha256">SHA-256 (recommended)</option>
-                <option value="sha1">SHA-1</option>
-              </select>
-            </Field>
-            <Field label="Signature Algorithm">
-              <select
-                value={saml.signatureAlgorithm}
-                onChange={(e) =>
-                  setSaml((p) => ({
-                    ...p,
-                    signatureAlgorithm: e.target.value as 'rsa-sha1' | 'rsa-sha256',
-                  }))
-                }
-                className={inputCls}
-              >
-                <option value="rsa-sha256">RSA-SHA256 (recommended)</option>
-                <option value="rsa-sha1">RSA-SHA1</option>
-              </select>
-            </Field>
-          </div>
-
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={saml.signSAMLRequest}
-              onChange={(e) => setSaml((p) => ({ ...p, signSAMLRequest: e.target.checked }))}
-              className="w-4 h-4 rounded border-gray-300 text-portal-blue focus:ring-portal-blue"
-            />
-            <span className="text-sm text-gray-700 select-none">Sign SAML authentication requests</span>
-          </label>
-
-          <div className="pt-2">
-            <button
-              onClick={submitSaml}
-              disabled={submitting}
-              className="bg-portal-blue text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-portal-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'Creating…' : 'Create SAML Connection →'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -1239,7 +834,6 @@ export default function ProfilePage() {
 
   const tabs: { id: ProfileTab; label: string }[] = [
     { id: 'tokens', label: 'Profile & Tokens' },
-    { id: 'connections', label: 'Enterprise Connections' },
     { id: 'support', label: 'Support' },
     { id: 'methods', label: 'Methods' },
   ]
@@ -1250,7 +844,7 @@ export default function ProfilePage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
         <p className="text-gray-500 mt-1 text-sm">
-          View your session tokens, manage enterprise connections, track support tickets, and enroll authentication methods.
+          View your session tokens, track support tickets, and enroll authentication methods.
         </p>
       </div>
 
@@ -1272,7 +866,6 @@ export default function ProfilePage() {
       </div>
 
       {activeTab === 'tokens' && <TokensTab />}
-      {activeTab === 'connections' && <ConnectionsTab />}
       {activeTab === 'support' && <SupportTab />}
       {activeTab === 'methods' && <MethodsTab />}
     </div>

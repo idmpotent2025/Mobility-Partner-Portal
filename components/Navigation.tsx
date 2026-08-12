@@ -25,7 +25,7 @@ export default function Navigation() {
             </svg>
             <div className="leading-tight">
               <div className="text-cat-yellow font-bold text-lg tracking-wide">Mobility</div>
-              <div className="text-gray-400 text-xs tracking-widest uppercase">Partner Portal</div>
+              <div className="text-gray-400 text-xs tracking-widest uppercase">Portal</div>
             </div>
           </Link>
 
@@ -85,12 +85,20 @@ export default function Navigation() {
                 </a>
               </div>
             ) : (
-              <a
-                href={getLoginUrl(variant)}
-                className="bg-cat-yellow text-cat-black font-bold px-4 py-2 rounded text-sm hover:bg-yellow-400 transition-colors duration-150"
-              >
-                Sign In
-              </a>
+              <div className="flex items-center gap-2">
+                <a
+                  href={variant === 'd' ? '/login/native' : `${getLoginUrl(variant)}&screen_hint=signup`}
+                  className="border border-cat-yellow text-cat-yellow font-bold px-4 py-2 rounded text-sm hover:bg-cat-yellow hover:text-cat-black transition-colors duration-150"
+                >
+                  Sign Up
+                </a>
+                <a
+                  href={getLoginUrl(variant)}
+                  className="bg-cat-yellow text-cat-black font-bold px-4 py-2 rounded text-sm hover:bg-yellow-400 transition-colors duration-150"
+                >
+                  Sign In
+                </a>
+              </div>
             )}
           </div>
         </div>

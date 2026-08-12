@@ -6,6 +6,7 @@ const VARIANTS: { id: Variant; label: string; description: string }[] = [
   { id: 'a', label: 'A', description: 'Auth App 1 — CLIENT_ID_A' },
   { id: 'b', label: 'B', description: 'Auth App 2 — CLIENT_ID_B' },
   { id: 'c', label: 'C', description: 'Auth App 3 — CLIENT_ID_C' },
+  { id: 'd', label: 'D', description: 'Native — Passkey + SMS OTP' },
 ]
 
 interface Props {
@@ -19,7 +20,7 @@ export default function AbcToggle({ variant, onChange }: Props) {
   return (
     <div className="bg-cat-charcoal border border-cat-steel rounded-xl px-6 py-4 inline-flex flex-col items-center gap-3">
       <p className="text-gray-400 text-xs font-semibold uppercase tracking-widest">
-        🔬 A / B / C Login Test Variant
+        🔬 A / B / C / D Login Test Variant
       </p>
 
       {/* Pill toggle */}
